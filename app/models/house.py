@@ -16,9 +16,10 @@ class HouseModel(BaseModel):
 
     lat: Optional[float] = None
     lon: Optional[float] = None
+    postalcode: Optional[str] = None
 
-    @field_validator('city')
     @classmethod
+    @field_validator('city')
     def capitalize_city(cls, v: str) -> str:
         return v.capitalize()
 

@@ -13,6 +13,15 @@ class BurgersDijk(BaseSite):
     def __init__(self):
         super().__init__("https://burgersdijk.com/huurwoningen/")
 
+    async def get(self):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(self.url)
+
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch {self.url}: {response.text}")
+
+        return response.text
+
     async def crawl(self):
         houses = []
         html = await self.get()
