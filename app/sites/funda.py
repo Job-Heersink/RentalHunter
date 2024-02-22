@@ -16,21 +16,21 @@ logger = logging.getLogger(__name__)
 class Funda(BaseSite):
 
     def __init__(self):
-        super().__init__('https://www.funda.nl/zoeken/huur/?selected_area=["nl"]')
+        super().__init__('https://www.funda.nl', "zoeken/huur/", end_page=150)
 
     async def get(self, page=1):
         async with httpx.AsyncClient() as client:
-            response = await client.get(self.url,
+            response = await client.get(self.get_link(),
                                         params={"search_result": page, "selected_area": "nl"},
                                         headers={
                                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
 
         if response.status_code != 200:
-            raise Exception(f"Failed to fetch {self.url}: {response.text}")
+            raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
 
         return response.text
 
-    async def _crawl_page(self, page, houses):
+    async def crawl_page(self, page, houses):
         logger.info(f"crawling page {page}")
         html = await self.get(page=page)
         soup = BeautifulSoup(html, 'html.parser')
@@ -67,22 +67,6 @@ class Funda(BaseSite):
             except Exception as e:
                 logger.error(f"Failed to parse house: {e}")
                 logger.error(f"on Address: {address}")
-
-    async def crawl(self):
-        houses = []
-        tasks = []
-
-        # search the first 6 pages
-        for p in range(1, 150):
-            tasks.append(asyncio.create_task(self._crawl_page(p, houses)))
-            await asyncio.sleep(0.5)
-
-        await asyncio.gather(*tasks)
-
-        for house in houses:
-            if "Amers" in house.city:
-                print(house)
-        return houses
 
 
 if __name__ == '__main__':

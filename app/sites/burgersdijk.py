@@ -11,19 +11,18 @@ from app.sites.base_site import BaseSite
 class BurgersDijk(BaseSite):
 
     def __init__(self):
-        super().__init__("https://burgersdijk.com/huurwoningen/")
+        super().__init__("https://burgersdijk.com", "/huurwoningen/")
 
     async def get(self):
         async with httpx.AsyncClient() as client:
-            response = await client.get(self.url)
+            response = await client.get(self.get_link())
 
         if response.status_code != 200:
-            raise Exception(f"Failed to fetch {self.url}: {response.text}")
+            raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
 
         return response.text
 
-    async def crawl(self):
-        houses = []
+    async def crawl_page(self, page, houses):
         html = await self.get()
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -36,7 +35,6 @@ class BurgersDijk(BaseSite):
             if type(house) == element.Tag:
                 available = len(house.find_all(lambda t: t.name == "div" and "verhuurd" in t.text)) == 0
                 path = house.find('a')['href']
-                path = path.replace("/huurwoningen", "")
                 address = house.find("span", {"class": "street-address"}).text.replace("*", "")
                 city = house.find("span", {"class": "locality"}).text
 
@@ -56,7 +54,6 @@ class BurgersDijk(BaseSite):
                     HouseModel(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
                                available=available, square_meters=square_meters, lat=lat, lon=lon))
 
-        print(houses)
         return houses
 
 

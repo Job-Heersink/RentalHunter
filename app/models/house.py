@@ -9,6 +9,7 @@ class HouseModel(BaseModel):
     city: str
     address: str
     square_meters: Optional[float] = None
+    bedrooms: Optional[int] = None
 
     price: Optional[float] = None
 
