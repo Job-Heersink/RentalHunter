@@ -10,7 +10,7 @@ AWS_PROFILE_NAME = os.getenv("CF_PROFILE_NAME")
 WEB_APP_IMAGE = os.getenv("CF_WEB_APP_IMAGE")
 CLOUDFORMATION_BUCKET = f"s3-{REGION}-{ENVIRONMENT_CODE}-job-sandbox-cf-templates"
 
-assert ENVIRONMENT_CODE in ["test", "stg", "prod"]
+assert ENVIRONMENT_CODE in ["test", "stg", "prod", "sandbox"]
 
 if AWS_PROFILE_NAME is not None:
     boto3.setup_default_session(profile_name=AWS_PROFILE_NAME)

@@ -5,9 +5,9 @@ REGION=eu-central-1
 #export ENV_CODE=...
 #export AWS_PROFILE=...
 #AWS_ECR_REPO=...
-IMAGE_NAME=WoningBot
+IMAGE_NAME=woning-bot
 APPLICATION_NAME=woning-bot
-FUNCTION_NAME=lambda-$ENV_CODE-$APPLICATION_NAME
+FUNCTION_NAME=lambda-$ENV_CODE-$APPLICATION_NAME-scraper
 IMAGE_URI=$AWS_ECR_REPO/$IMAGE_NAME:latest
 
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO

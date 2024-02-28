@@ -1,5 +1,7 @@
 pandas
 beautifulsoup4
 httpx
+aioboto3
 
 pydantic
+opencage

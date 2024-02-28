@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class IkWilHuren(BaseSite):
 
     def __init__(self):
-        super().__init__('https://ikwilhuren.nu', "/aanbod", end_page=18)
+        super().__init__('https://ikwilhuren.nu', "/aanbod", end_page=10)
 
     async def get(self, page=1):
         async with httpx.AsyncClient() as client:

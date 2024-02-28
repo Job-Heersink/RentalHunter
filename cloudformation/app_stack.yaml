@@ -49,6 +49,10 @@ Resources:
       Environment:
         Variables:
           MAIL_CONFIG_REF: "NA"
+          DATA_BUCKET:
+            Ref: DataS3Bucket
+          HOUSES_KEY: "house_data.csv"
+          SUBSCRIBERS_KEY: "subscribers.csv"
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -71,6 +75,24 @@ Resources:
           Id:
             Fn::Sub: "${ProductName}-scraper-lambda"
 #          RoleArn: String
+
+  DataS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: "s3-${AWS::Region}-${EnvironmentCode}-${ProductName}-storage"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      VersioningConfiguration:
+        Status: Suspended
 
   LambdaIAMRole:
     Type: 'AWS::IAM::Role'
@@ -97,3 +119,15 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: 'S3'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetBucketLocation"
+                  - "s3:ListObjectsInBucket"
+                  - "s3:*Object"
+                Resource:
+                  - Fn::Join: [ "", [ !GetAtt DataS3Bucket.Arn, "/*" ] ]
+                  - !GetAtt DataS3Bucket.Arn

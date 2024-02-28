@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Pararius(BaseSite):
 
     def __init__(self):
-        super().__init__('https://www.pararius.nl', "/huurwoningen/nederland", end_page=33)
+        super().__init__('https://www.pararius.nl', "/huurwoningen/nederland", end_page=15)
 
     async def get(self, page=1):
         async with httpx.AsyncClient() as client:

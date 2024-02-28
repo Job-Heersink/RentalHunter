@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Funda(BaseSite):
 
     def __init__(self):
-        super().__init__('https://www.funda.nl', "/zoeken/huur/", end_page=75)
+        super().__init__('https://www.funda.nl', "/zoeken/huur/", end_page=35)
 
     async def get(self, page=1):
         logger.info(f'fetching page {self.get_link()}?search_result={page}&selected_area=["nl"]')
