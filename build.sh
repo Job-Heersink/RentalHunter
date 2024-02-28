@@ -2,9 +2,9 @@
 set -e
 
 REGION=eu-central-1
-#export ENV_CODE=prod
-#export AWS_PROFILE=beer-o-meter-prod
-AWS_ECR_REPO=950283508718.dkr.ecr.eu-central-1.amazonaws.com
+#export ENV_CODE=...
+#export AWS_PROFILE=...
+#AWS_ECR_REPO=...
 IMAGE_NAME=WoningBot
 APPLICATION_NAME=woning-bot
 FUNCTION_NAME=lambda-$ENV_CODE-$APPLICATION_NAME
