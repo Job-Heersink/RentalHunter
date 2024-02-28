@@ -51,20 +51,20 @@ class Rebo(BaseSite):
                     if price == "":
                         continue
                 except Exception as e:
-                    logger.error(f"Failed to parse price: {e} for house: {address} in {city}")
+                    logger.warning(f"Failed to parse price: {e} for house: {address} in {city}")
                     continue
 
                 try:
                     square_meters = re.sub(r"\D", "", house.find("div", {"class": "details"}).find("div", {
                         "class": "measurements"}).text.split("m")[0])
                 except Exception as e:
-                    logger.error(f"Failed to parse square meters: {e} for house: {address} in {city}")
+                    logger.warning(f"Failed to parse square meters: {e} for house: {address} in {city}")
                     square_meters = None
 
                 try:
                     bedrooms = re.sub(r"\D", "",house.find("div", {"class": "details"}).find("div", {"class": "bedrooms"}).text)
                 except Exception as e:
-                    logger.error(f"Failed to parse bedrooms: {e} for house: {address} in {city}")
+                    logger.warning(f"Failed to parse bedrooms: {e} for house: {address} in {city}")
                     bedrooms = None
 
                 houses.append(

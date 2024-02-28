@@ -62,16 +62,16 @@ class IkWilHuren(BaseSite):
                     raise Exception("Not square meters")
                 square_meters = re.sub(r"\D", "", square_meters.split("m")[0])
             except Exception as e:
-                logger.error(f"Failed to parse square meters: {e} for house: {address} in {city}")
+                logger.warning(f"Failed to parse square meters: {e} for house: {address} in {city}")
                 square_meters = None
 
             try:
                 bedrooms = re.sub(r"\D", "", house_details.find_all(lambda t: t.name=="span" and "slaapkamer" in t.text)[0].text)
             except Exception as e:
-                logger.error(f"Failed to parse bedrooms: {e} for house: {address} in {city}")
+                logger.warning(f"Failed to parse bedrooms: {e} for house: {address} in {city}")
                 bedrooms = None
 
-            logger.info(f"Found house: {address} in {city} for {price} with {square_meters}m2 and {bedrooms} bedrooms")
+            logger.debug(f"Found house: {address} in {city} for {price} with {square_meters}m2 and {bedrooms} bedrooms")
             houses.append(
                 HouseModel(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
                            available=available, square_meters=square_meters, postalcode=postalcode, bedrooms=bedrooms))

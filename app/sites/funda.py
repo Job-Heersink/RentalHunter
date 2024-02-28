@@ -16,12 +16,13 @@ logger = logging.getLogger(__name__)
 class Funda(BaseSite):
 
     def __init__(self):
-        super().__init__('https://www.funda.nl', "zoeken/huur/", end_page=150)
+        super().__init__('https://www.funda.nl', "/zoeken/huur/", end_page=75)
 
     async def get(self, page=1):
+        logger.info(f'fetching page {self.get_link()}?search_result={page}&selected_area=["nl"]')
         async with httpx.AsyncClient() as client:
             response = await client.get(self.get_link(),
-                                        params={"search_result": page, "selected_area": "nl"},
+                                        params={"search_result": page, "selected_area": '["nl"]'},
                                         headers={
                                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
 
@@ -60,7 +61,7 @@ class Funda(BaseSite):
                                                0].contents[0].text)
                     if square_meters == "":
                         continue
-                    logger.info(city)
+                    logger.debug(city)
                     houses.append(
                         HouseModel(source=self.name, city=city, address=address, link=link, price=price,
                                    available=available, square_meters=square_meters, postalcode=postal_code))

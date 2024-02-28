@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+    - AWS::LanguageExtensions
+
+Parameters:
+  ProductName:
+    Type: String
+    Default: 'woning-bot'
+    Description: The name of the product
+  EnvironmentCode:
+    Type: String
+    Default: 'test'
+    AllowedValues:
+      - test
+      - stg
+      - prod
+      - sandbox
+    Description: The environment code used in the naming of all AWS services.
+  WebAppImage:
+    Type: String
+    Description: The image of the web app
+
+Description: 'This template deploys the cloud infrastructure for the BOM usage reporter web app'
+
+Conditions:
+  IsProduction: !Equals
+    - !Ref EnvironmentCode
+    - prod
+
+Resources:
+  # # # # # # # # # # # # # # #
+  # # # # Lambda web app  # # #
+  # # # # # # # # # # # # # # #
+
+  ScraperLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - x86_64
+      Code:
+        ImageUri: !Ref WebAppImage
+      Description: "Woningbot Scraper"
+      FunctionName:
+        Fn::Sub: "lambda-${EnvironmentCode}-${ProductName}-scraper"
+      MemorySize: 1024
+      Timeout: 600
+      PackageType: Image
+      Role: !GetAtt LambdaIAMRole.Arn
+      Environment:
+        Variables:
+          MAIL_CONFIG_REF: "NA"
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ScraperLambda.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt InvokeRule.Arn
+
+  InvokeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Scrape every 4 minutes"
+      Name: "scrape-rule"
+      #RoleArn: String
+      ScheduleExpression: "rate(4 minutes)"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt ScraperLambda.Arn
+          Id:
+            Fn::Sub: "${ProductName}-scraper-lambda"
+#          RoleArn: String
+
+  LambdaIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName:
+        Fn::Sub: "iam-${AWS::Region}-${EnvironmentCode}-${ProductName}-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'root'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: arn:aws:logs:*:*:*

@@ -1,6 +1,7 @@
 import asyncio
+import logging
 
-import httpx
+logger = logging.getLogger(__name__)
 
 
 class BaseSite:
@@ -14,18 +15,21 @@ class BaseSite:
         self.name = self.__class__.__name__
 
     async def crawl(self):
-        houses = []
-        tasks = []
+        try:
+            houses = []
+            tasks = []
 
-        for p in range(self.start_page, self.end_page+1):
-            tasks.append(asyncio.create_task(self.crawl_page(p, houses)))
-            await asyncio.sleep(self.page_crawl_delay)
+            for p in range(self.start_page, self.end_page + 1):
+                tasks.append(asyncio.create_task(self.crawl_page(p, houses)))
+                await asyncio.sleep(self.page_crawl_delay)
 
-        await asyncio.gather(*tasks)
+            await asyncio.gather(*tasks)
 
-        for house in houses:
-            print(house)
-        return houses
+            # for house in houses:
+            #     print(house)
+            return houses
+        except Exception as e:
+            logger.error(f"Failed to crawl {self.name}: {e}")
 
     async def crawl_page(self, page, houses):
         raise NotImplementedError

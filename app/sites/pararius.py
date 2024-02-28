@@ -75,7 +75,7 @@ class Pararius(BaseSite):
                     if price == "":
                         raise Exception("No price")
                 except Exception as e:
-                    logger.error(f"Failed to parse price: {e} for house: {address} in {city}")
+                    logger.warning(f"Failed to parse price: {e} for house: {address} in {city}")
                     price = None
                 details = house.find("ul", {"class": "illustrated-features illustrated-features--compact"})
                 square_meters = re.sub(r"\D", "", details.find("li", {"class": "illustrated-features__item illustrated-features__item--surface-area"}).text.split("m")[0])
