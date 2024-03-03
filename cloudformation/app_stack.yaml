@@ -76,6 +76,30 @@ Resources:
             Fn::Sub: "${ProductName}-scraper-lambda"
 #          RoleArn: String
 
+  LambdaUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      AuthType: NONE
+      Cors:
+        AllowCredentials: true
+        #        AllowHeaders:
+        #          - String
+        AllowMethods:
+          - POST
+        AllowOrigins:
+          - "*"
+        MaxAge: 0
+      InvokeMode: BUFFERED
+      TargetFunctionArn: !GetAtt ScraperLambda.Arn
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunctionUrl
+      FunctionName: !GetAtt ScraperLambda.Arn
+      FunctionUrlAuthType: NONE
+      Principal: "*"
+
   DataS3Bucket:
     Type: AWS::S3::Bucket
     Properties:

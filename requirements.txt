@@ -1,7 +1,8 @@
 pandas
 beautifulsoup4
 httpx
+boto3
 aioboto3
 
 pydantic
-opencage
+discord.py
