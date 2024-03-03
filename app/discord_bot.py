@@ -49,7 +49,7 @@ def handle_discord(event):
 def command_handler(body):
     command = body['data']['name']
 
-    if command == 'bleb':
+    if command == 'websites':
         return {
             'statusCode': 200,
             'body': json.dumps({
