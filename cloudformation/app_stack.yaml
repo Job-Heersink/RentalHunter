@@ -19,6 +19,9 @@ Parameters:
   WebAppImage:
     Type: String
     Description: The image of the web app
+  DiscordPublicKey:
+    Type: String
+    Description: The public key of the discord bot
 
 Description: 'This template deploys the cloud infrastructure for the BOM usage reporter web app'
 
@@ -53,6 +56,7 @@ Resources:
             Ref: DataS3Bucket
           HOUSES_KEY: "house_data.csv"
           SUBSCRIBERS_KEY: "subscribers.csv"
+          DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission

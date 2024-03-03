@@ -8,6 +8,7 @@ ENVIRONMENT_CODE = os.getenv("CF_ENV_CODE")
 APPLICATION = os.getenv("CF_APPLICATION")
 AWS_PROFILE_NAME = os.getenv("CF_PROFILE_NAME")
 WEB_APP_IMAGE = os.getenv("CF_WEB_APP_IMAGE")
+DISCORD_PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
 CLOUDFORMATION_BUCKET = f"s3-{REGION}-{ENVIRONMENT_CODE}-job-sandbox-cf-templates"
 
 assert ENVIRONMENT_CODE in ["test", "stg", "prod", "sandbox"]
@@ -22,7 +23,8 @@ print(f"DEPLOYING TO {APPLICATION} {ENVIRONMENT_CODE} ENVIRONMENT IN {REGION} RE
 APP_STACKNAME = f"{APPLICATION}-{ENVIRONMENT_CODE}-stack"
 app_params = {"ProductName": APPLICATION,
               "EnvironmentCode": ENVIRONMENT_CODE,
-              "WebAppImage": WEB_APP_IMAGE}
+              "WebAppImage": WEB_APP_IMAGE,
+              "DiscordPublicKey": DISCORD_PUBLIC_KEY}
 
 
 def update_cloudformation(stack_file, stack_name, params):

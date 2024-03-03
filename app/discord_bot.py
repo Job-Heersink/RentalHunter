@@ -1,23 +1,66 @@
-import discord
+import json
+import os
 
-intents = discord.Intents.default()
-intents.message_content = True
+from nacl.exceptions import BadSignatureError
+from nacl.signing import VerifyKey
 
-client = discord.Client(intents=intents)
-
-
-@client.event
-async def on_ready():
-    print(f'We have logged in as {client.user}')
+PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+def authenticate_discord(event):
+    body = json.loads(event['body'])
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+    signature = event['headers']['x-signature-ed25519']
+    timestamp = event['headers']['x-signature-timestamp']
+
+    # validate the interaction
+
+    verify_key = VerifyKey(bytes.fromhex(PUBLIC_KEY))
+    message = timestamp + json.dumps(body, separators=(',', ':'))
+    verify_key.verify(message.encode(), signature=bytes.fromhex(signature))
 
 
-client.run('your token here')
+def handle_discord(event):
+    body = json.loads(event['body'])
+    try:
+        authenticate_discord(event)
+    except BadSignatureError as e:
+        return {
+            'statusCode': 401,
+            'body': json.dumps('invalid request signature')
+        }
+
+    t = body['type']
+
+    if t == 1:
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'type': 1})
+        }
+    elif t == 2:
+        return command_handler(body)
+    else:
+        return {
+            'statusCode': 400,
+            'body': json.dumps('unhandled request type')
+        }
+
+
+def command_handler(body):
+    command = body['data']['name']
+
+    if command == 'bleb':
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'type': 4,
+                'data': {
+                    'content': 'Hello, World.',
+                }
+            })
+        }
+    else:
+        return {
+            'statusCode': 400,
+            'body': json.dumps('unhandled command')
+        }

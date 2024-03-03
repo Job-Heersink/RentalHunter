@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class Subscriber(BaseModel):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, alias='_id')
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: str
     email: str
 
