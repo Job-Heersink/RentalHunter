@@ -4,19 +4,19 @@ import os
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
+from app.sites import site_list
+
 PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
 
 
 def authenticate_discord(event):
-    body = json.loads(event['body'])
-
     signature = event['headers']['x-signature-ed25519']
     timestamp = event['headers']['x-signature-timestamp']
 
     # validate the interaction
 
     verify_key = VerifyKey(bytes.fromhex(PUBLIC_KEY))
-    message = timestamp + json.dumps(body, separators=(',', ':'))
+    message = timestamp + event['body']
     verify_key.verify(message.encode(), signature=bytes.fromhex(signature))
 
 
@@ -55,7 +55,7 @@ def command_handler(body):
             'body': json.dumps({
                 'type': 4,
                 'data': {
-                    'content': 'Hello, World.',
+                    'content': '\n'.join([s.name for s in site_list]),
                 }
             })
         }
