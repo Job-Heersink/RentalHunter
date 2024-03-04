@@ -22,6 +22,9 @@ Parameters:
   DiscordPublicKey:
     Type: String
     Description: The public key of the discord bot
+  DiscordBotToken:
+    Type: String
+    Description: The token of the discord bot
 
 Description: 'This template deploys the cloud infrastructure for the BOM usage reporter web app'
 
@@ -57,6 +60,8 @@ Resources:
           HOUSES_KEY: "house_data.csv"
           SUBSCRIBERS_KEY: "subscribers.csv"
           DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
+          DISCORD_BOT_TOKEN: !Ref DiscordBotToken #TODO: secure this token
+
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -121,6 +126,26 @@ Resources:
               SSEAlgorithm: 'AES256'
       VersioningConfiguration:
         Status: Suspended
+
+#  SubscribersTable:
+#    Type: AWS::DynamoDB::Table
+#    Properties:
+#      AttributeDefinitions:
+#        - AttributeDefinition
+#      BillingMode: PAY_PER_REQUEST
+#      ContributorInsightsSpecification:
+#         Enabled: ENABLE
+#      GlobalSecondaryIndexes:
+#        - GlobalSecondaryIndex
+#      KeySchema:
+#        - KeySchema
+#      LocalSecondaryIndexes:
+#        - LocalSecondaryIndex
+#      TableClass: STANDARD
+#      TableName:
+#        Fn::Sub: "dynamodb-${EnvironmentCode}-${ProductName}-subscribers"
+#      TimeToLiveSpecification:
+#        TimeToLiveSpecification
 
   LambdaIAMRole:
     Type: 'AWS::IAM::Role'

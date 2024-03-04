@@ -38,7 +38,7 @@ async def get_houses():
 
 
 async def get_subscribers():
-    return await _get(subscribers_key)
+    return await _get(subscribers_key, index_col="channel_id")
 
 
 async def put_houses(df):

@@ -6,6 +6,7 @@ REGION=eu-central-1
 #export AWS_PROFILE=...
 #AWS_ECR_REPO=...
 #DISCORD_PUBLIC_KEY=...
+#DISCORD_BOT_TOKEN=...
 IMAGE_NAME=woning-bot
 APPLICATION_NAME=woning-bot
 FUNCTION_NAME=lambda-$ENV_CODE-$APPLICATION_NAME-scraper
@@ -21,6 +22,7 @@ export CF_ENV_CODE=$ENV_CODE
 export CF_APPLICATION=$APPLICATION_NAME
 export CF_WEB_APP_IMAGE=$IMAGE_URI
 export DISCORD_PUBLIC_KEY=$DISCORD_PUBLIC_KEY
+export DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN
 python3.9 cloudformation/update_cloudformation.py
 
 

@@ -1,21 +1,19 @@
 import asyncio
 import logging
-import os
 import time
 from datetime import datetime
 
 import pandas as pd
 
-from app.discord_bot import handle_discord
-from app.handlers.data_handler import get_houses, put_houses
+from app.discord.commands import discord_bot
+
+from app.handlers.data_handler import get_houses, put_houses, get_subscribers
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 from app.sites import site_list
-
-
 
 
 def task_to_result(tasks):
@@ -77,27 +75,19 @@ async def main():
                 # send_mail(s["email"], row)
 
 
-
-
 def handler(event, context):
     logger.info("Starting scraper")
     logger.info(event)
     logger.info(f"source {event.get('source')}")
     logger.info(f"rawPath {event.get('rawPath')}")
 
-    print("Starting scraper, since this log does work")
-
     if event is not None and event.get("source") == "aws.events":
         logger.info("Scheduled event")
         # asyncio.run(main())
     elif event is not None and event.get("rawPath") == "/discord":
         logger.info("Discord event")
-        response = handle_discord(event)
+        response = asyncio.run(discord_bot.handle_message(event))
         logger.info(response)
         return response
     else:
         return {"statusCode": 400, "body": "Operation not allowed"}
-
-
-if __name__ == '__main__':
-    handler(None, None)
