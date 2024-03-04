@@ -23,17 +23,6 @@ class UnicodeEmotes:
 
 async def _notify_subscriber(sub: Subscriber, df: pd.DataFrame):
     logger.info(f"Notifying {sub.channel_id} about new houses")
-    print(df)
-    print("price")
-    df = df.loc[((df["price"] >= sub.min_price) | df["price"].isnull())]
-    print(df)
-    df = df.loc[((df["price"] <= sub.max_price) | df["price"].isnull())]
-    print(df)
-
-    print("lon and lat")
-    print(sub.longitude)
-    print(sub.latitude)
-
     filtered_houses = df.loc[
         ((df["price"] >= sub.min_price) | df["price"].isnull()) &
         ((df["price"] <= sub.max_price) | df["price"].isnull()) &
