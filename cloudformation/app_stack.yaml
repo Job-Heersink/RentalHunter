@@ -25,6 +25,10 @@ Parameters:
   DiscordBotToken:
     Type: String
     Description: The token of the discord bot
+  GeocodingApiKey:
+    Type: String
+    Description: The API key for the geocoding service
+
 
 Description: 'This template deploys the cloud infrastructure for the BOM usage reporter web app'
 
@@ -61,6 +65,7 @@ Resources:
           SUBSCRIBERS_KEY: "subscribers.csv"
           DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
           DISCORD_BOT_TOKEN: !Ref DiscordBotToken #TODO: secure this token
+          GEOCODING_API_KEY: !Ref GeocodingApiKey #TODO: secure this token
 
 
   LambdaInvokePermission:

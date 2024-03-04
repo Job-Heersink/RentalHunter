@@ -4,7 +4,7 @@ import os
 from typing import Optional
 
 import httpx
-from typing_extensions import Tuple
+from typing import Tuple
 
 BASE_URL = "https://api.opencagedata.com/geocode/v1/json"
 
@@ -13,9 +13,14 @@ logger = logging.getLogger(__name__)
 API_KEY = os.getenv("GEOCODING_API_KEY")
 
 
-async def get_geocode(address: str, city, country="Netherlands") -> Optional[Tuple[float, float]]:
+async def get_geocode(address: str = None, city: str = None, country: str = "Netherlands") -> Optional[Tuple[float, float]]:
+    query_list = []
+    for p in [address, city, country]:
+        if p is not None:
+            query_list.append(p)
+
     async with httpx.AsyncClient() as client:
-        response = await client.get(BASE_URL, params={"q": ",".join([address, city, country]), "key": API_KEY})
+        response = await client.get(BASE_URL, params={"q": ",".join(query_list), "key": API_KEY})
 
     if response.status_code != 200:
         raise Exception(f"Failed to fetch {BASE_URL}: {response.text}")

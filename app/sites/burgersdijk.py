@@ -4,7 +4,7 @@ import re
 import httpx
 from bs4 import BeautifulSoup, element
 
-from app.models.house import HouseModel
+from app.models.house import House
 from app.sites.base_site import BaseSite
 
 
@@ -51,8 +51,8 @@ class BurgersDijk(BaseSite):
                 square_meters = float(square_meters.replace("Woonoppervlakte ", "").split(" m")[0])
 
                 houses.append(
-                    HouseModel(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
-                               available=available, square_meters=square_meters, lat=lat, lon=lon))
+                    House(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
+                          available=available, square_meters=square_meters, lat=lat, lon=lon))
 
         return houses
 

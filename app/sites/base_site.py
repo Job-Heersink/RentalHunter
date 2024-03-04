@@ -15,8 +15,8 @@ class BaseSite:
         self.name = self.__class__.__name__
 
     async def crawl(self):
+        houses = []
         try:
-            houses = []
             tasks = []
 
             for p in range(self.start_page, self.end_page + 1):
@@ -25,11 +25,10 @@ class BaseSite:
 
             await asyncio.gather(*tasks)
 
-            # for house in houses:
-            #     print(house)
-            return houses
         except Exception as e:
             logger.error(f"Failed to crawl {self.name}: {e}")
+        finally:
+            return houses
 
     async def crawl_page(self, page, houses):
         raise NotImplementedError

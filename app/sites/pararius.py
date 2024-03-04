@@ -6,7 +6,7 @@ import time
 import httpx
 from bs4 import BeautifulSoup, element
 
-from app.models.house import HouseModel
+from app.models.house import House
 from app.sites.base_site import BaseSite
 
 logging.basicConfig(level=logging.INFO)
@@ -81,8 +81,8 @@ class Pararius(BaseSite):
                 square_meters = re.sub(r"\D", "", details.find("li", {"class": "illustrated-features__item illustrated-features__item--surface-area"}).text.split("m")[0])
                 bedrooms = re.sub(r"\D", "", details.find("li", {"class": "illustrated-features__item illustrated-features__item--number-of-rooms"}).text)
                 houses.append(
-                    HouseModel(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
-                               available=available, square_meters=square_meters, postalcode=postal_code, bedrooms=bedrooms))
+                    House(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
+                          available=available, square_meters=square_meters, postalcode=postal_code, bedrooms=bedrooms))
 
 
 if __name__ == '__main__':

@@ -16,16 +16,12 @@ assert BOT_TOKEN is not None
 URL = f"https://discord.com/api/v10/applications/{APP_ID}/commands"
 HEADERS = {"Authorization": f"Bot {BOT_TOKEN}"}
 
-
 discord_type_map = {
     str: 3,
     int: 4,
     bool: 5,
     float: 10
 }
-
-
-
 
 
 async def register_discord_commands():
@@ -59,10 +55,15 @@ async def register_discord_commands():
                        "options": options}
             print(f"adding {c_label}")
             print(json.dumps(request, indent=4))
-            # response = await client.post(URL, headers=HEADERS, json=request)
-            # print(response.status_code)
-            # print(json.dumps(response.json(),indent=4))
-            # assert response.status_code == 200 or response.status_code == 201
+            response = await client.post(URL, headers=HEADERS, json=request)
+            print(response.status_code)
+            print(json.dumps(response.json(), indent=4))
+            assert response.status_code == 200 or response.status_code == 201
+
+        for c in await get_discord_commands():
+            if c["name"] not in discord_bot.commands:
+                print(f"deleting {c['id']}")
+                await delete_discord_commands(c["id"])
 
 
 async def get_discord_commands():
@@ -71,9 +72,18 @@ async def get_discord_commands():
     """
     async with httpx.AsyncClient() as client:
         response = await client.get(URL, headers=HEADERS)
+        return response.json()
+
+
+async def delete_discord_commands(command_id):
+    """
+    Delete all commands in the discord bot
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(f"{URL}/{command_id}", headers=HEADERS)
         print(response.status_code)
-        print(json.dumps(response.json(),indent=4))
+        assert response.status_code == 204
 
 
 if __name__ == '__main__':
-    asyncio.run(register_discord_commands())
+    asyncio.run(get_discord_commands())

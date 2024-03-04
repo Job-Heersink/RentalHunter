@@ -6,7 +6,7 @@ import time
 import httpx
 from bs4 import BeautifulSoup, element
 
-from app.models.house import HouseModel
+from app.models.house import House
 from app.sites.base_site import BaseSite
 
 logging.basicConfig(level=logging.INFO)
@@ -68,8 +68,8 @@ class Rebo(BaseSite):
                     bedrooms = None
 
                 houses.append(
-                    HouseModel(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
-                               available=available, square_meters=square_meters, lat=lat, lon=lon, bedrooms=bedrooms))
+                    House(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
+                          available=available, square_meters=square_meters, lat=lat, lon=lon, bedrooms=bedrooms))
 
         return houses
 

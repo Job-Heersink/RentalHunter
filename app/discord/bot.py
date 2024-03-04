@@ -45,10 +45,11 @@ class DiscordBot:
             logger.info("received interaction")
             logger.info(json.dumps(body, indent=4))
             command = body['data']['name']
+            options = {o["name"]:o["value"] for o in body['data'].get('options', [])}
             if command not in self.commands:
                 return self._response(400, 'unknown command')
             try:
-                message = await self.commands[command](body=body)
+                message = await self.commands[command](body=body, **options)
                 return self._response(200, {'type': 4, 'data': {'content': message}})
             except Exception as e:
                 traceback.print_exc()

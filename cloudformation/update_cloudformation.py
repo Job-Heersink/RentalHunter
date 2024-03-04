@@ -24,7 +24,8 @@ app_params = {"ProductName": APPLICATION,
               "EnvironmentCode": ENVIRONMENT_CODE,
               "WebAppImage": WEB_APP_IMAGE,
               "DiscordPublicKey": os.getenv("DISCORD_PUBLIC_KEY"),
-              "DiscordBotToken": os.getenv("DISCORD_BOT_TOKEN")}
+              "DiscordBotToken": os.getenv("DISCORD_BOT_TOKEN"),
+              "GeocodingApiKey": os.getenv("GEOCODING_API_KEY")}
 
 
 def update_cloudformation(stack_file, stack_name, params):

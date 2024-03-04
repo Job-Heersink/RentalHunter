@@ -6,7 +6,7 @@ import time
 import httpx
 from bs4 import BeautifulSoup, element
 
-from app.models.house import HouseModel
+from app.models.house import House
 from app.sites.base_site import BaseSite
 
 logging.basicConfig(level=logging.ERROR)
@@ -73,8 +73,8 @@ class IkWilHuren(BaseSite):
 
             logger.debug(f"Found house: {address} in {city} for {price} with {square_meters}m2 and {bedrooms} bedrooms")
             houses.append(
-                HouseModel(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
-                           available=available, square_meters=square_meters, postalcode=postalcode, bedrooms=bedrooms))
+                House(source=self.name, city=city, address=address, link=self.get_link(path), price=price,
+                      available=available, square_meters=square_meters, postalcode=postalcode, bedrooms=bedrooms))
 
 
 if __name__ == '__main__':

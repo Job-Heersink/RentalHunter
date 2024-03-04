@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 COPY app ${LAMBDA_TASK_ROOT}/app
 #COPY resources ${LAMBDA_TASK_ROOT}/resources
 
-CMD [ "app.scraper.handler" ]
+CMD [ "app.main.handler" ]

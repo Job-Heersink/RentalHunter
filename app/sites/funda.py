@@ -6,7 +6,7 @@ import time
 import httpx
 from bs4 import BeautifulSoup, element
 
-from app.models.house import HouseModel
+from app.models.house import House
 from app.sites.base_site import BaseSite
 
 logging.basicConfig(level=logging.INFO)
@@ -63,8 +63,8 @@ class Funda(BaseSite):
                         continue
                     logger.debug(city)
                     houses.append(
-                        HouseModel(source=self.name, city=city, address=address, link=link, price=price,
-                                   available=available, square_meters=square_meters, postalcode=postal_code))
+                        House(source=self.name, city=city, address=address, link=link, price=price,
+                              available=available, square_meters=square_meters, postalcode=postal_code))
             except Exception as e:
                 logger.error(f"Failed to parse house: {e}")
                 logger.error(f"on Address: {address}")
