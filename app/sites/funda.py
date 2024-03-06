@@ -53,7 +53,8 @@ class Funda(BaseSite):
             try:
                 jsn = json.loads(s.text)
                 if "lat" in jsn and "lng" in jsn:
-                    return jsn["lat"], jsn["lng"]
+                    if jsn["lat"] != '' and jsn["lng"] != '':
+                        return jsn["lat"], jsn["lng"]
             except Exception as e:
                 logger.error(f"Failed to parse house coordinates: {e}")
         return None, None
