@@ -3,11 +3,8 @@ import logging
 import time
 from datetime import datetime
 
-import pandas as pd
-
-from app.handlers.data_handler import get_houses, put_houses, get_subscribers
+from app.database.house import add_houses, get_existing_house_addresses, House
 from app.handlers.geocoding_handler import get_geocode
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,19 +18,20 @@ def task_to_result(tasks):
         r = t.result()
         if r is not None:
             for house in r:
-                yield house.dict()
+                yield house
 
 
-async def get_geocode_for_df(df, address):
-    row = df.loc[address]
-    city = row["city"]
-    if not row[["lat", "lon"]].isnull().values.any():
+async def insert_geocode_in_house(house: House):
+    if house.lat is not None and house.lon is not None:
         return
 
-    pos = await get_geocode(address=address, city=city)
-    logger.info(f"Geocoded {address}, {city}: {pos}")
+    pos = await get_geocode(address=house.address, city=house.city)
+    logger.info(f"Geocoded {house.address}, {house.city}: {pos}")
+    house.lat, house.lon = pos
 
-    df.loc[address, ["lat", "lon"]] = pos
+
+async def get_known_addresses():
+    return {a async for a in get_existing_house_addresses()}
 
 
 async def scrape():
@@ -46,27 +44,11 @@ async def scrape():
     await asyncio.gather(*tasks)
     logger.info(f"Scraping took {time.time() - t:.2f} seconds")
 
-    df = pd.DataFrame(task_to_result(tasks))
-    df = df.set_index("address")
-
-    return df
+    return task_to_result(tasks)
 
 
 async def run():
-    scrape_start = datetime.now()
-
-    # old_df = pd.read_csv("temp_old.csv", index_col="address")
-    # new_df = pd.read_csv("temp_new.csv", index_col="address")
-    new_df, old_df = await asyncio.gather(scrape(), get_houses())
-    new_df["scrape_date"] = pd.to_datetime(new_df['scrape_date'])
-    old_df["scrape_date"] = pd.to_datetime(old_df['scrape_date'])
-
-    combined_df = pd.concat([new_df, old_df])
-    combined_df = combined_df[~combined_df.index.duplicated(keep="last")]
-    new_houses = combined_df.loc[combined_df["scrape_date"] >= scrape_start]
-
-    logger.info(f"Found {len(new_houses)} new houses")
-    await asyncio.gather(put_houses(combined_df), *[get_geocode_for_df(new_houses, address) for address in new_houses.index])
+    houses, known_addresses = await asyncio.gather(scrape(), get_known_addresses())
+    new_houses = [h for h in houses if h.address not in known_addresses]
+    await asyncio.gather(add_houses(new_houses), *[insert_geocode_in_house(h) for h in new_houses])
     return new_houses
-
-

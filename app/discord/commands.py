@@ -1,9 +1,8 @@
 import logging
 
 from app.discord.bot import DiscordBot
-from app.handlers.data_handler import get_subscribers, put_subscribers
 from app.handlers.geocoding_handler import get_geocode
-from app.models.subscriber import Subscriber
+from app.database.subscriber import Subscriber, add_subscriber, remove_subscriber
 from app.sites import site_list
 from app.utils.doc_parser import parse_docstring
 
@@ -65,28 +64,19 @@ async def subscribe(body, min_price: float = None,
 
     channel_id = body["channel"]["id"]
     logger.info(f"Subscribing {channel_id} to updates with filters: {kwargs}")
-    df = await get_subscribers()
     if city is not None:
         kwargs["city"] = kwargs["city"].capitalize()
         kwargs["latitude"], kwargs["longitude"] = await get_geocode(city=kwargs["city"])
 
-    if channel_id in df.index:
-        subscription = df.loc[channel_id].to_dict()
-        subscription.update(kwargs)
-        df.loc[channel_id] = [subscription[k] for k in df.columns]
-        base_response = "You are already subscribed to updates"
-    else:
-        subscription = Subscriber(channel_id=channel_id, **kwargs).dict()
-        df.loc[channel_id] = [subscription[k] for k in df.columns]
-        base_response = "Successfully subscribed to the bot"
-        await put_subscribers(df)
+    s = Subscriber(channel_id=channel_id, **kwargs)
+    await add_subscriber(s)
 
-    return "\n".join([f"{base_response}. Your filters are:",
-                      f"- price from {subscription['min_price']} euro to {subscription['max_price']} euro",
-                      f"- square meters from {subscription['min_sqm']} m2 to {subscription['max_sqm']} m2",
-                      f"- number of bedrooms from {subscription['min_rooms']} to {subscription['max_rooms']}",
-                      f"- city: {subscription['city']} (long: {subscription['latitude']}, lat: {subscription['longitude']})",
-                      f"- search radius: {subscription['radius']} km"])
+    return "\n".join([f"Successfully subscribed! Your filters are:",
+                      f"- price from {s.min_price} euro to {s.max_price} euro",
+                      f"- square meters from {s.min_sqm} m2 to {s.max_sqm} m2",
+                      f"- number of bedrooms from {s.min_rooms} to {s.max_rooms}",
+                      f"- city: {s.city} (lat: {s.latitude}, long: {s.longitude})",
+                      f"- search radius: {s.radius} km"])
 
 
 @discord_bot.command("/unsubscribe")
@@ -95,10 +85,5 @@ async def unsubscribe(body):
     Unsubscribe from the updates from the bot
     """
     channel_id = body["channel"]["id"]
-    df = await get_subscribers()
-    if channel_id in df.index:
-        df = df.drop(channel_id)
-        await put_subscribers(df)
-        return "Successfully Unsubscribed from the bot."
-    else:
-        return "Cannot Unsubscribe. You are not subscribed to the bot."
+    await remove_subscriber(channel_id)
+    return "Successfully Unsubscribed from the bot."

@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 session = aioboto3.Session()
 data_bucket = os.getenv("DATA_BUCKET")
 house_key = os.getenv("HOUSES_KEY")
-subscribers_key = os.getenv("SUBSCRIBERS_KEY")
 
 assert data_bucket is not None
 
@@ -37,13 +36,7 @@ async def get_houses():
     return await _get(house_key, index_col="address")
 
 
-async def get_subscribers():
-    return await _get(subscribers_key, index_col="channel_id")
-
-
 async def put_houses(df):
     await _put(house_key, df)
 
 
-async def put_subscribers(df):
-    await _put(subscribers_key, df)

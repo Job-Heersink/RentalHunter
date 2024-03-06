@@ -66,6 +66,8 @@ Resources:
           DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
           DISCORD_BOT_TOKEN: !Ref DiscordBotToken #TODO: secure this token
           GEOCODING_API_KEY: !Ref GeocodingApiKey #TODO: secure this token
+          SUBSCRIBERS_TABLE: !Ref SubscribersTable
+          HOUSES_TABLE: !Ref HousesTable
 
 
   LambdaInvokePermission:
@@ -132,25 +134,33 @@ Resources:
       VersioningConfiguration:
         Status: Suspended
 
-#  SubscribersTable:
-#    Type: AWS::DynamoDB::Table
-#    Properties:
-#      AttributeDefinitions:
-#        - AttributeDefinition
-#      BillingMode: PAY_PER_REQUEST
-#      ContributorInsightsSpecification:
-#         Enabled: ENABLE
-#      GlobalSecondaryIndexes:
-#        - GlobalSecondaryIndex
-#      KeySchema:
-#        - KeySchema
-#      LocalSecondaryIndexes:
-#        - LocalSecondaryIndex
-#      TableClass: STANDARD
-#      TableName:
-#        Fn::Sub: "dynamodb-${EnvironmentCode}-${ProductName}-subscribers"
-#      TimeToLiveSpecification:
-#        TimeToLiveSpecification
+  SubscribersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: channel_id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: channel_id
+          KeyType: HASH
+      TableClass: STANDARD
+      TableName:
+        Fn::Sub: "dynamodb-${EnvironmentCode}-${ProductName}-subscribers"
+
+  HousesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: address
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: address
+          KeyType: HASH
+      TableClass: STANDARD
+      TableName:
+        Fn::Sub: "dynamodb-${EnvironmentCode}-${ProductName}-houses"
 
   LambdaIAMRole:
     Type: 'AWS::IAM::Role'
@@ -189,3 +199,24 @@ Resources:
                 Resource:
                   - Fn::Join: [ "", [ !GetAtt DataS3Bucket.Arn, "/*" ] ]
                   - !GetAtt DataS3Bucket.Arn
+        - PolicyName: 'DynamoDB'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:BatchGetItem"
+                  - "dynamodb:BatchWriteItem"
+                  - "dynamodb:UpdateTimeToLive"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:PartiQLSelect"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:Scan"
+                  - "dynamodb:Query"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:UpdateTable"
+                  - "dynamodb:GetRecords"
+                Resource:
+                  - !GetAtt SubscribersTable.Arn
+                  - !GetAtt HousesTable.Arn

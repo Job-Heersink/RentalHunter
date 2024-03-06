@@ -1,13 +1,11 @@
 import asyncio
 import logging
-import math
 
 import numpy as np
 import pandas as pd
 
-from app.handlers.data_handler import get_subscribers
-from app.models.house import House
-from app.models.subscriber import Subscriber
+from app.database.house import House
+from app.database.subscriber import Subscriber, get_subscribers
 from app.discord.commands import discord_bot
 
 logger = logging.getLogger(__name__)
@@ -30,7 +28,7 @@ async def _notify_subscriber(sub: Subscriber, df: pd.DataFrame):
         ((df["bedrooms"] <= sub.max_rooms) | df["bedrooms"].isnull()) &
         ((df["square_meters"] >= sub.min_sqm) | df["square_meters"].isnull()) &
         ((df["square_meters"] <= sub.max_sqm) | df["square_meters"].isnull()) &
-        ((np.absolute(df["lon"] - sub.longitude) <= np.absolute(sub.radius / (111.320 * np.cos(sub.latitude)))) | df[
+        ((np.absolute(df["lon"] - sub.longitude) <= np.absolute(sub.radius / (111.320 * np.cos(sub.latitude*(np.pi/180))))) | df[
             "lon"].isnull()) &
         ((np.absolute(df["lat"] - sub.latitude) <= np.absolute(sub.radius / 110.574)) | df["lat"].isnull())
         ]
@@ -49,6 +47,10 @@ Link {UnicodeEmotes.globe}: {house.link}
             """, sub.channel_id)
 
 
-async def notify_subscribers(df: pd.DataFrame):
-    subs = await get_subscribers()
-    await asyncio.gather(*[_notify_subscriber(Subscriber(channel_id=i, **s.to_dict()), df) for i, s in subs.iterrows()])
+async def notify_subscribers(houses):
+    notify_tasks = []
+    df = pd.DataFrame([h.dict() for h in houses])
+    df = df.set_index("address")
+    async for s in get_subscribers():
+        notify_tasks.append(asyncio.create_task(_notify_subscriber(s, df)))
+    await asyncio.gather(*notify_tasks)

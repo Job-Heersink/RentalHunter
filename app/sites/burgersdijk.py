@@ -4,7 +4,7 @@ import re
 import httpx
 from bs4 import BeautifulSoup, element
 
-from app.models.house import House
+from app.database.house import House
 from app.sites.base_site import BaseSite
 
 

@@ -31,5 +31,5 @@ def handler(event, context):
     return asyncio.run(route(event))
 
 
-# if __name__ == '__main__':
-#     handler({"source": "aws.events"}, None)
+if __name__ == '__main__':
+    handler({"source": "aws.events"}, None)
