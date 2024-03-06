@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 class UnicodeEmotes:
     house = "🏠"
+    city = "🌆"
     money = "💰"
     bed = "🛏️"
     ruler = "📏"
@@ -39,6 +40,7 @@ async def _notify_subscriber(sub: Subscriber, df: pd.DataFrame):
         house = House(address=i, **h.to_dict())
         await discord_bot.send_message(
             f"""We found a house for you!!
+City {UnicodeEmotes.city}: {house.city}
 Address {UnicodeEmotes.house}: {house.address}
 Price {UnicodeEmotes.money}: {house.price}
 Rooms {UnicodeEmotes.bed}: {house.bedrooms if house.bedrooms is not None else "Unknown"}
@@ -49,6 +51,8 @@ Link {UnicodeEmotes.globe}: {house.link}
 
 async def notify_subscribers(houses):
     notify_tasks = []
+    if len(houses) == 0:
+        return
     df = pd.DataFrame([h.dict() for h in houses])
     df = df.set_index("address")
     async for s in get_subscribers():
