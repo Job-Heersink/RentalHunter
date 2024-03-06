@@ -58,11 +58,6 @@ Resources:
       Role: !GetAtt LambdaIAMRole.Arn
       Environment:
         Variables:
-          MAIL_CONFIG_REF: "NA"
-          DATA_BUCKET:
-            Ref: DataS3Bucket
-          HOUSES_KEY: "houses.csv"
-          SUBSCRIBERS_KEY: "subscribers.csv"
           DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
           DISCORD_BOT_TOKEN: !Ref DiscordBotToken #TODO: secure this token
           GEOCODING_API_KEY: !Ref GeocodingApiKey #TODO: secure this token
@@ -115,24 +110,6 @@ Resources:
       FunctionName: !GetAtt ScraperLambda.Arn
       FunctionUrlAuthType: NONE
       Principal: "*"
-
-  DataS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName:
-        Fn::Sub: "s3-${AWS::Region}-${EnvironmentCode}-${ProductName}-storage"
-      AccessControl: Private
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: 'AES256'
-      VersioningConfiguration:
-        Status: Suspended
 
   SubscribersTable:
     Type: AWS::DynamoDB::Table
@@ -187,18 +164,6 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: 'S3'
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "s3:GetBucketLocation"
-                  - "s3:ListObjectsInBucket"
-                  - "s3:*Object"
-                Resource:
-                  - Fn::Join: [ "", [ !GetAtt DataS3Bucket.Arn, "/*" ] ]
-                  - !GetAtt DataS3Bucket.Arn
         - PolicyName: 'DynamoDB'
           PolicyDocument:
             Version: 2012-10-17
