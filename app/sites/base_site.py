@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class BaseSite:
             await asyncio.gather(*tasks)
 
         except Exception as e:
+            traceback.print_exc()
             logger.error(f"Failed to crawl {self.name}: {e}")
         finally:
             return houses
