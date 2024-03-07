@@ -30,7 +30,6 @@ jobs:
 #        run: pytest
 
   deploy:
-    needs: test
     name: Deploy using CloudFormation
     runs-on: ubuntu-latest
     environment: sandbox
