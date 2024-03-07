@@ -96,6 +96,7 @@ jobs:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           GEOCODING_API_KEY: ${{ secrets.GEOCODING_API_KEY }}
         run: |
+          export CF_WEB_APP_IMAGE=$IMAGE_URI
           python3 cloudformation/update_cloudformation.py
 
       - name: Deploy code to lambda
