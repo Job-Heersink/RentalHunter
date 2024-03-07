@@ -23,7 +23,7 @@ class Funda(BaseSite):
         logger.info(f'fetching page {self.get_link()}?search_result={page}&selected_area=["nl"]')
         async with httpx.AsyncClient() as client:
             response = await client.get(self.get_link(),
-                                        params={"search_result": page, "selected_area": '["nl"]'},
+                                        params={"search_result": page, "selected_area": '["nl"]', "sort":"date_down"},
                                         headers={
                                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
 
