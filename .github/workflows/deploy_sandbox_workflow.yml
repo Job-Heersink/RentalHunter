@@ -56,6 +56,16 @@ jobs:
           pip install --upgrade pip
           pip install boto3
 
+      - name: setup environment
+        env:
+          IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+          AWS_ECR_REPO: ${{ secrets.AWS_ECR_REPO }}
+          ENV_CODE: ${{ vars.ENV_CODE }}
+          APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+        run: |
+          echo "IMAGE_URI=$AWS_ECR_REPO/$IMAGE_NAME:latest" >> $GITHUB_ENV
+          echo "FUNCTION_NAME=lambda-$ENV_CODE-$APPLICATION_NAME-scraper" >> $GITHUB_ENV
+
       - name: docker login
         env:
           REGION: ${{ vars.AWS_REGION }}
@@ -66,9 +76,7 @@ jobs:
       - name: docker build
         env:
           IMAGE_NAME: ${{ vars.IMAGE_NAME }}
-          AWS_ECR_REPO: ${{ secrets.AWS_ECR_REPO }}
         run: |
-          export IMAGE_URI=$AWS_ECR_REPO/$IMAGE_NAME:latest
           docker build -t $IMAGE_NAME .
           docker tag $IMAGE_NAME:latest $IMAGE_URI
 
@@ -92,14 +100,8 @@ jobs:
 
       - name: Deploy code to lambda
         env:
-          ENVIRONMENT: ${{ vars.ENV_CODE }}
-          APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
-          IMAGE_NAME: ${{ vars.IMAGE_NAME }}
-          AWS_ECR_REPO: ${{ secrets.AWS_ECR_REPO }}
           REGION: ${{ vars.AWS_REGION }}
         run: |
-          FUNCTION_NAME=lambda-$ENV_CODE-$APPLICATION_NAME-scraper
-          IMAGE_URI=$AWS_ECR_REPO/$IMAGE_NAME:latest
           UPDATE_RETURN=$(aws lambda update-function-code --function-name $FUNCTION_NAME --image-uri $IMAGE_URI --region $REGION)
 
           STATUS='InProgress'
