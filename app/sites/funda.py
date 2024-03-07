@@ -1,8 +1,10 @@
 import asyncio
 import json
 import logging
+import os
 import re
 import time
+import webbrowser
 
 import httpx
 from bs4 import BeautifulSoup, element
@@ -17,16 +19,14 @@ logger = logging.getLogger(__name__)
 class Funda(BaseSite):
 
     def __init__(self):
-        super().__init__('https://www.funda.nl', "/zoeken/huur/", end_page=15)
+        super().__init__('https://www.funda.nl', "/zoeken/huur/", end_page=5)
 
     async def get(self, page=1):
-        logger.info(f'fetching page {self.get_link()}?search_result={page}&selected_area=["nl"]')
         async with httpx.AsyncClient() as client:
-            response = await client.get(self.get_link(),
-                                        params={"search_result": page, "selected_area": '["nl"]', "sort":"date_down"},
+            response = await client.get(self.get_link()+f'?search_result={page}&selected_area="[nl]"&sort="date_down"&publication_date=1',
                                         headers={
                                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
-
+            print(response.url)
         if response.status_code != 200:
             raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
 
@@ -68,10 +68,10 @@ class Funda(BaseSite):
                 assert len(paths) == 1
 
                 link = paths[0]['href']
-                address = house.find("h2", {"data-test-id": "street-name-house-number"}).text.replace("\n",
-                                                                                                      "").lstrip().rstrip()
-                city_postalcode = house.find("div", {"data-test-id": "postal-code-city"}).text.replace("\n",
-                                                                                                       "").lstrip().rstrip()
+                address = house.find("h2", {"data-test-id": "street-name-house-number"}).text \
+                    .replace("\n", "").lstrip().rstrip()
+                city_postalcode = house.find("div", {"data-test-id": "postal-code-city"}).text \
+                    .replace("\n", "").lstrip().rstrip()
                 postal_nr, postal_abc, city = city_postalcode.split(" ", 2)
                 postal_code = f"{postal_nr} {postal_abc}"
                 available = True
@@ -80,6 +80,8 @@ class Funda(BaseSite):
                                        house.select("ul[class='mt-1 flex h-6 min-w-0 flex-wrap overflow-hidden']")[
                                            0].contents[0].text)
                 if square_meters == "":
+                    square_meters = None
+                if price == "":
                     return
 
                 lat, lon = await self.crawl_house_for_coordinates(link)
@@ -89,21 +91,21 @@ class Funda(BaseSite):
                           lat=lat, lon=lon))
         except Exception as e:
             logger.error(f"Failed to parse house: {e}")
-            logger.error(f"on Address: {address}")
 
     async def crawl_page(self, page, houses):
         logger.info(f"crawling page {page}")
         html = await self.get(page=page)
         soup = BeautifulSoup(html, 'html.parser')
 
-        houses_page = soup.select("div[class='pt-4']")
+        houses_page = soup.find_all("div", {"data-test-id": "search-result-item"})
         if len(houses_page) == 0:
-            raise Exception(f"Failed to parse {self.name} page {page}")
+            logger.error(f"Failed to parse {self.name} page {page}. No Houses")
 
-        houses_page = houses_page[0]
-        await asyncio.gather(*[self.crawl_house(house, houses) for house in houses_page.children])
+        await asyncio.gather(*[self.crawl_house(house, houses) for house in houses_page])
 
 
 if __name__ == '__main__':
+    res = asyncio.run(Funda().crawl())
+    print(f"houses crawled: {len(res)}")
     for h in asyncio.run(Funda().crawl()):
-        print(h)
+        print(f"{h.address} {h.city}")
