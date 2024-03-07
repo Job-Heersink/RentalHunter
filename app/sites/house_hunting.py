@@ -1,11 +1,9 @@
 import asyncio
-import json
 import logging
 import re
-import time
+import traceback
 
-import httpx
-from bs4 import BeautifulSoup, element
+from bs4 import BeautifulSoup
 
 from app.database.house import House
 from app.sites.base_site import BaseSite
@@ -17,24 +15,15 @@ logger = logging.getLogger(__name__)
 class HouseHunting(BaseSite):
 
     def __init__(self):
-        super().__init__('https://househunting.nl/', "/wp-json/houses/posts", end_page=15)
+        super().__init__('https://househunting.nl/', "/wp-json/houses/posts", end_page=10)
 
     async def get(self, page=1):
-        async with httpx.AsyncClient() as client:
-            form = {"km": "", "t": "320243", "page": page, "sort": ""}
-            response = await client.post(self.get_link(),
-                                         data=form,
-                                         headers={
-                                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
+        form = {"km": "", "t": "320243", "page": page, "sort": ""}
+        return (await super().post(url=self.get_link(), data=form, headers={
                                              "Host": "househunting.nl",
                                              "Origin": "https://househunting.nl",
                                              "Referer": "https://househunting.nl/woningaanbod/",
-                                             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"})
-
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
-
-        return response.json()
+                                             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"})).json()
 
     async def crawl_house(self, house, houses):
         try:
@@ -46,14 +35,12 @@ class HouseHunting(BaseSite):
             square_meters = None
             bedrooms = None
 
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url,
-                                            headers={
-                                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
-                if response.status_code != 200:
-                    raise Exception(f"Failed to fetch {url}: {response.text}")
+            if address is None:
+                logger.warning(f"Failed to parse address for house")
+                return
 
-                soup = BeautifulSoup(response.text, 'html.parser')
+            response = (await super().get(url=url)).text
+            soup = BeautifulSoup(response, 'html.parser')
 
             details = soup.find("ul", {"class": "details"})
             for detail in details.find_all("li"):
@@ -74,6 +61,7 @@ class HouseHunting(BaseSite):
                                 square_meters=square_meters, postalcode=None, bedrooms=bedrooms,
                                 lat=latitude, lon=longitude))
         except Exception as e:
+            traceback.print_exc()
             logger.error(f"Failed to parse house: {e}")
 
     async def crawl_page(self, page, houses):

@@ -49,8 +49,6 @@ async def scrape():
 
 async def run():
     houses, known_addresses = await asyncio.gather(scrape(), get_known_addresses())
-    with open("old_houses.txt", "w") as f:
-        f.write(str(known_addresses))
     new_houses = [h for h in houses if h.address not in known_addresses]
     await asyncio.gather(add_houses(new_houses), *[insert_geocode_in_house(h) for h in new_houses])
     return new_houses

@@ -20,15 +20,7 @@ class Nijland(BaseSite):
         super().__init__('https://www.nijland.nl/', "/aanbod/woningaanbod/+500km/huur/aantal-80/")
 
     async def get(self, page=1):
-        async with httpx.AsyncClient() as client:
-            response = await client.get(self.get_link(),
-                                        headers={
-                                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
-
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
-
-        return response.text
+        return (await super().get(url=self.get_link())).text
 
     async def crawl_page(self, page, houses):
         logger.info(f"crawling page {page}")

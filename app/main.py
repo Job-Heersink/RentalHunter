@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 from app import scraper
 from app.discord.commands import discord_bot
@@ -31,5 +32,5 @@ def handler(event, context):
     return asyncio.run(route(event))
 
 
-# if __name__ == '__main__':
-#     handler({"source": "aws.events"}, None)
+if __name__ == '__main__' and bool(os.getenv("DEVELOP", False)):
+    handler({"source": "aws.events"}, None)

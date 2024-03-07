@@ -1,12 +1,10 @@
 import asyncio
 import json
 import logging
-import os
 import re
-import time
-import webbrowser
+import traceback
 
-import httpx
+
 from bs4 import BeautifulSoup, element
 
 from app.database.house import House
@@ -22,30 +20,16 @@ class Funda(BaseSite):
         super().__init__('https://www.funda.nl', "/zoeken/huur/", end_page=5)
 
     async def get(self, page=1):
-        async with httpx.AsyncClient() as client:
-            response = await client.get(self.get_link()+f'?search_result={page}&selected_area="[nl]"&sort="date_down"&publication_date=1',
-                                        headers={
-                                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
-            print(response.url)
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
-
-        return response.text
+        return (await super().get(url=self.get_link()+f'?search_result={page}&selected_area="[nl]"&sort="date_down"&publication_date=1')).text
 
     async def crawl_house_for_coordinates(self, house_link):
-        async with httpx.AsyncClient() as client:
-            response = await client.get(house_link,
-                                        headers={
-                                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
+        response = await super().get(url=house_link)
 
-        if response.status_code == 301:
+        if response.status_code == 301 or response.status_code == 302:
             soup = BeautifulSoup(response.text, 'html.parser')
             soup = soup.find("a")
             house_link = soup['href']
             return await self.crawl_house_for_coordinates(self.get_link(house_link))
-
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch {house_link}: {response.text}")
 
         soup = BeautifulSoup(response.text, 'html.parser')
         scripts = soup.find_all("script", {"type": "application/json", "data-object-map-config": ""})
@@ -91,6 +75,7 @@ class Funda(BaseSite):
                           lat=lat, lon=lon))
         except Exception as e:
             logger.error(f"Failed to parse house: {e}")
+            traceback.print_exc()
 
     async def crawl_page(self, page, houses):
         logger.info(f"crawling page {page}")

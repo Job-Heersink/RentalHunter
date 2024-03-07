@@ -19,19 +19,11 @@ class Pararius(BaseSite):
         super().__init__('https://www.pararius.nl', "/huurwoningen/nederland", end_page=15)
 
     async def get(self, page=1):
-        async with httpx.AsyncClient() as client:
-            if page == 1:
-                link = self.get_link()
-            else:
-                link = f"{self.get_link()}/page-{page}"
-            response = await client.get(link,
-                                        headers={
-                                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
-
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
-
-        return response.text
+        if page == 1:
+            link = self.get_link()
+        else:
+            link = f"{self.get_link()}/page-{page}"
+        return (await super().get(url=link)).text
 
     def clean_address(self, address):
         if address.startswith("Kamer "):

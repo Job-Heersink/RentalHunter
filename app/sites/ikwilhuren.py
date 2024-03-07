@@ -3,7 +3,6 @@ import logging
 import re
 import time
 
-import httpx
 from bs4 import BeautifulSoup, element
 
 from app.database.house import House
@@ -16,19 +15,10 @@ logger = logging.getLogger(__name__)
 class IkWilHuren(BaseSite):
 
     def __init__(self):
-        super().__init__('https://ikwilhuren.nu', "/aanbod", end_page=10)
+        super().__init__('https://ikwilhuren.nu', "/aanbod", end_page=5)
 
     async def get(self, page=1):
-        async with httpx.AsyncClient() as client:
-            response = await client.get(self.get_link(),
-                                        params={"page": page},
-                                        headers={
-                                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"})
-
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch {self.get_link()}: {response.text}")
-
-        return response.text
+        return (await super().get(url=self.get_link(), params={"page": page, "sort": "aanbodDESC"})).text
 
     async def crawl_page(self, page, houses):
         logger.info(f"crawling page {page}")
@@ -78,4 +68,5 @@ class IkWilHuren(BaseSite):
 
 
 if __name__ == '__main__':
-    asyncio.run(IkWilHuren().crawl())
+    for h in asyncio.run(IkWilHuren().crawl()):
+        print(h)
