@@ -1,11 +1,5 @@
 import asyncio
-import json
 import logging
-import re
-import time
-
-import httpx
-from bs4 import BeautifulSoup, element
 
 from app.database.house import House
 from app.sites.base_site import BaseSite
@@ -14,43 +8,60 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class Nijland(BaseSite):
+class Domica(BaseSite):
 
     def __init__(self):
-        super().__init__('https://www.domica.nl/', "/woningaanbod/", end_page=10)
+        super().__init__('https://www.domica.nl/',
+                         "/rts/collections/public/3d202c54/runtime/collection/EAZLEE/data",
+                         end_page=1)
 
     async def get(self, page=1):
         return (await super().get(url=self.get_link(),
-                                  params={"offer": "rent", "sort": "date_asc", "page": page})).text
+                                  params={"page": {"pageSize": 100, "pageNumber": 0},
+                                          "filters": [{"field": "division", "operator": "eq", "value": "property"},
+                                                      {"field": "tmp_label", "operator": "NIN", "value": ["*"]},
+                                                      {"field": "tmp_forrent", "operator": "EQ", "value": "1"},
+                                                      {"field": "tmp_city", "operator": "NE", "value": "*"},
+                                                      {"field": "tmp_streetAddress", "operator": "NE", "value": "*"},
+                                                      {"field": "tmp_property_type_1", "operator": "NE", "value": "*"},
+                                                      {"field": "tmp_property_type_2", "operator": "NE", "value": "*"},
+                                                      {"field": "tmp_property_type_3", "operator": "NE", "value": "*"},
+                                                      {"field": "tmp_num_bedrooms", "operator": "GTE", "value": "0"},
+                                                      {"field": "tmp_interior", "operator": "NE", "value": "*"},
+                                                      {"field": "tmp_surface", "operator": "GTE", "value": "0"},
+                                                      {"field": "tmp_price", "operator": "GTE", "value": "0"},
+                                                      {"field": "tmp_price", "operator": "GTE", "value": "0"},
+                                                      {"field": "po-api", "operator": "NE", "value": "*"}
+                                                      ],
+                                          "sortBy": {"field": "ranking", "direction": "asc"},
+                                          "language": "DUTCH"})).json()
 
-    async def crawl_page(self, page, houses): #TODO: STILL IMPLEMENT THIS. They do some API calls, so maybe I can do that too
+    async def crawl_page(self, page, houses):
         logger.info(f"crawling page {page}")
-        html = await self.get(page=page)
-        soup = BeautifulSoup(html, 'html.parser')
-
-        houses_res = soup.find("div", {"class": "eazlee_aanbod_widget_container"})
-        houses_res = houses_res.find("div", {"class": "eazlee_objects"})
-        houses_res = houses_res.find_all("a", recursive=False)
-        assert len(houses_res) > 0
-
-        for house in houses_res:
+        result = await self.get(page=page)
+        res_houses = result['values']
+        for house in res_houses:
             available = True
-            path = house["href"]
-            try:
-                price = house.find("div", {"class": "eazlee_object_bottom_price"}).text
-                price = re.sub(r"\D", "", price)
-            except Exception as e:
-                logger.warning(f"Failed to parse price: {e} for house: {path}")
-                price = None
+            path = f"/woning/{house['page_item_url']}"
+            house_data = house["data"]
+            city = house_data['city']
+            price = house_data.get('price', None)
+            square_meters = house_data.get('surface', None)
+            bedrooms = house_data.get('num_bedrooms', None)
+            if bedrooms == 0:
+                bedrooms = None
 
-            address = house.find("div", {"class": "eazlee_object_bottom_street_nummer"}).text
-            postal_code, city = house.find("div", {"class": "eazlee_object_bottom_postcode_city"}).text.split(" ", 1)
-
-            houses.append(House(source=self.name, city=city, address=address,
-                                link=self.get_link(path), price=price, available=available,
-                                square_meters=square_meters, postalcode=postal_code, bedrooms=bedrooms,
-                                lat=latitude, lon=longitude))
+            loc_data = house_data.get('locality', {'street':None, 'number':None,
+                                                   'lat':None, 'lng':None, 'zipcode':None})
+            address = f"{loc_data.get('street', None)} {loc_data.get('number', None)}"
+            latitude = loc_data.get('lat', None)
+            longitude = loc_data.get('lng', None)
+            postal_code = loc_data.get('zipcode', None)
+            houses.append(House(source=self.name, city=city, address=address, link=self.get_link(path),
+                                price=price, available=available, square_meters=square_meters, postalcode=postal_code,
+                                bedrooms=bedrooms, lat=latitude, lon=longitude))
 
 
 if __name__ == '__main__':
-    asyncio.run(Nijland().crawl())
+    for _h in asyncio.run(Domica().crawl()):
+        print(_h)
