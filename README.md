@@ -47,6 +47,6 @@ The scraper will automatically pick up the new website and start scraping it onc
 ## Donations
 If you would like to support the development of this bot and the servers it is running on, you can do so by donating here:  
 
-<a href="https://www.paypal.com/donate/?hosted_button_id=ZXGUR3NKBZEEN"><img src="https://github.com/andreostrovsky/donate-with-paypal/blob/925c5a9e397363c6f7a477973fdeed485df5fdd9/PNG/blue.png" height="72"></a>
+<a href="https://www.paypal.com/donate/?hosted_button_id=U9U2BR2JV28ME"><img src="https://github.com/andreostrovsky/donate-with-paypal/blob/925c5a9e397363c6f7a477973fdeed485df5fdd9/PNG/blue.png" height="72"></a>
 
 Even the smallest donation is greatly appreciated!
