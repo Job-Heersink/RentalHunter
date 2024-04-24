@@ -14,11 +14,8 @@ Currently, the following websites are being scraped:
 - [Domica](https://www.domica.nl/)
 
 ## Setup
-To subscribe to the discord bot, invite it to a channel using the following link:
+To subscribe to the discord bot, invite it to a channel using the following link: https://discord.com/oauth2/authorize?client_id=1213808680869437460
 
-```
-https://discord.com/oauth2/authorize?client_id=1213808680869437460
-```
 
 Once the bot has been added to a channel, you can use the following command to get notified when a new property is available:
 
