@@ -96,7 +96,7 @@ jobs:
           GEOCODING_API_KEY: ${{ secrets.GEOCODING_API_KEY }}
           TEMPLATE: "cloudformation/app_stack.yaml"
         run: |
-          STACK_NAME="$ENVIRONMENT_CODE-$PRODUCT_NAME-stack"
+          STACK_NAME="$PRODUCT_NAME-$ENVIRONMENT_CODE-stack"
           echo "STACK_NAME=$STACK_NAME" >> $GITHUB_ENV
           PARAMETERS="ParameterKey=ProductName,ParameterValue=$PRODUCT_NAME ParameterKey=EnvironmentCode,ParameterValue=$ENVIRONMENT_CODE ParameterKey=DISCORD_PUBLIC_KEY,ParameterValue=$DISCORD_PUBLIC_KEY ParameterKey=DISCORD_BOT_TOKEN,ParameterValue=$DISCORD_BOT_TOKEN ParameterKey=GEOCODING_API_KEY,ParameterValue=$GEOCODING_API_KEY ParameterKey=WEB_APP_IMAGE,ParameterValue=$IMAGE_URI"
           CAPABILITIES="CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_IAM"
