@@ -89,15 +89,33 @@ jobs:
 
       - name: Deploy to cloudformation
         env:
-          CF_REGION: ${{ vars.AWS_REGION }}
-          CF_ENV_CODE: ${{ vars.ENV_CODE }}
-          CF_APPLICATION: ${{ vars.APPLICATION_NAME }}
+          ENVIRONMENT_CODE: ${{ vars.ENV_CODE }}
+          PRODUCT_NAME: ${{ vars.APPLICATION_NAME }}
           DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           GEOCODING_API_KEY: ${{ secrets.GEOCODING_API_KEY }}
+          TEMPLATE: "cloudformation/app_stack.yaml"
         run: |
-          export CF_WEB_APP_IMAGE=$IMAGE_URI
-          python3 cloudformation/update_cloudformation.py
+          STACK_NAME="$ENVIRONMENT_CODE-$PRODUCT_NAME-stack"
+          echo "STACK_NAME=$STACK_NAME" >> $GITHUB_ENV
+          PARAMETERS="ParameterKey=ProductName,ParameterValue=$PRODUCT_NAME ParameterKey=EnvironmentCode,ParameterValue=$ENVIRONMENT_CODE ParameterKey=DISCORD_PUBLIC_KEY,ParameterValue=$DISCORD_PUBLIC_KEY ParameterKey=DISCORD_BOT_TOKEN,ParameterValue=$DISCORD_BOT_TOKEN ParameterKey=GEOCODING_API_KEY,ParameterValue=$GEOCODING_API_KEY ParameterKey=WEB_APP_IMAGE,ParameterValue=$IMAGE_URI"
+          CAPABILITIES="CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_IAM"
+          
+          if ! aws cloudformation describe-stacks --stack-name $STACK_NAME --output text; then
+            echo "Creating stack $STACK_NAME"
+            aws cloudformation create-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --parameters $PARAMETERS --capabilities $CAPABILITIES 
+            echo "Waiting for stack to be created"
+            aws cloudformation wait stack-create-complete --stack-name $STACK_NAME && echo "Stack created!"
+          else
+            echo "Updating stack $STACK_NAME"
+            if aws cloudformation update-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --parameters $PARAMETERS --capabilities $CAPABILITIES || [ $? -eq 254 ]; then
+              echo "CloudFormation stack update successful or no updates needed."
+            else
+              echo "CloudFormation stack update failed."
+            fi
+            echo "Waiting for stack to be updated"
+            aws cloudformation wait stack-update-complete --stack-name $STACK_NAME && echo "Stack updated!"
+          fi
 
       - name: Deploy code to lambda
         env:
