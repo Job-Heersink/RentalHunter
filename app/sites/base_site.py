@@ -4,6 +4,8 @@ import traceback
 
 import httpx
 
+from app.database.house import House
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,6 +63,9 @@ class BaseSite:
             traceback.print_exc()
             logger.error(f"Failed to crawl {self.name}: {e}")
         finally:
+            for h in houses:
+                if type(h) != House:
+                    raise Exception(f"Expected House object in houses list, got {type(h)}")
             return houses
 
     async def crawl_page(self, page, houses):
