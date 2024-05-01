@@ -1,10 +1,10 @@
-# WoningBot
+# RentalHunter
 A simple yet effective web scraper Discord bot that checks for available rental properties in the netherlands every 4 minutes.
 Subscribers of the discord bot will be notified when a new property is available, if it meets the set filters.
 
 Currently, the following websites are being scraped:
 - [BurgersDijk](https://burgersdijk.com/)
-- [Funda](https://www.funda.nl/)
+- [De Alliantie](https://ik-zoek.de-alliantie.nl)
 - [IkWilHuren](https://ikwilhuren.nu/)
 - [Pararius](https://www.pararius.nl/)
 - [Rebo](https://www.rebohuurwoning.nl/)

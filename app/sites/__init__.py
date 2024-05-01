@@ -1,3 +1,4 @@
+from .alliantie import Alliantie
 from .boon import Boon
 from .burgersdijk import BurgersDijk
 from .domica import Domica
@@ -8,4 +9,13 @@ from .nijland import Nijland
 from .pararius import Pararius
 from .rebo import Rebo
 
-site_list = [BurgersDijk(), Funda(), IkWilHuren(), Pararius(), Rebo(), Nijland(), Boon(), HouseHunting(), Domica()]
+site_list = [BurgersDijk(),
+             #Funda(), TODO: Working, but AWS IP ranges are blocked by Funda
+             Alliantie(),
+             IkWilHuren(),
+             Pararius(),
+             Rebo(),
+             Nijland(),
+             Boon(),
+             HouseHunting(),
+             Domica()]
