@@ -102,16 +102,16 @@ jobs:
           CAPABILITIES="CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_IAM"
           
           echo "parameters"
-          echo $PARAMETERS
+          echo "aws cloudformation create-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --parameters $PARAMETERS --capabilities $CAPABILITIES"
           
           if ! aws cloudformation describe-stacks --stack-name $STACK_NAME --output text; then
             echo "Creating stack $STACK_NAME"
-            aws cloudformation create-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --parameters $PARAMETERS --capabilities $CAPABILITIES 
+            aws cloudformation create-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --capabilities $CAPABILITIES --parameters $PARAMETERS
             echo "Waiting for stack to be created"
             aws cloudformation wait stack-create-complete --stack-name $STACK_NAME && echo "Stack created!"
           else
             echo "Updating stack $STACK_NAME"
-            if aws cloudformation update-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --parameters $PARAMETERS --capabilities $CAPABILITIES || [ $? -eq 254 ]; then
+            if aws cloudformation update-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --capabilities $CAPABILITIES --parameters $PARAMETERS || [ $? -eq 254 ]; then
               echo "CloudFormation stack update successful or no updates needed."
             else
               echo "CloudFormation stack update failed."

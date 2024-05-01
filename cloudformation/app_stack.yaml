@@ -5,7 +5,6 @@ Transform:
 Parameters:
   ProductName:
     Type: String
-    Default: 'woning-bot'
     Description: The name of the product
   EnvironmentCode:
     Type: String
