@@ -31,7 +31,7 @@ async def get_websites(body):
     """
     Get a list of all websites that are visited by the bot
     """
-    return "These are the websites that I visit every 10 minutes:\n" + "\n".join(
+    return "These are the websites that I visit every 4 minutes:\n" + "\n".join(
         [f"- {site.name} ({site.url})" for site in site_list])
 
 
