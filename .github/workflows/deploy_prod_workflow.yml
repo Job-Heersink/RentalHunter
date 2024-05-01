@@ -101,9 +101,6 @@ jobs:
           PARAMETERS="ParameterKey=ProductName,ParameterValue=$PRODUCT_NAME ParameterKey=EnvironmentCode,ParameterValue=$ENVIRONMENT_CODE ParameterKey=DISCORD_PUBLIC_KEY,ParameterValue=$DISCORD_PUBLIC_KEY ParameterKey=DISCORD_BOT_TOKEN,ParameterValue=$DISCORD_BOT_TOKEN ParameterKey=GEOCODING_API_KEY,ParameterValue=$GEOCODING_API_KEY ParameterKey=WEB_APP_IMAGE,ParameterValue=$IMAGE_URI"
           CAPABILITIES="CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_IAM"
           
-          echo "parameters"
-          echo "aws cloudformation create-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --parameters $PARAMETERS --capabilities $CAPABILITIES"
-          
           if ! aws cloudformation describe-stacks --stack-name $STACK_NAME --output text; then
             echo "Creating stack $STACK_NAME"
             aws cloudformation create-stack --stack-name $STACK_NAME --template-body file://$TEMPLATE --capabilities $CAPABILITIES --parameters $PARAMETERS
