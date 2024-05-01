@@ -1,5 +1,5 @@
-# RentalHunter 
-<img style="float: right; margin: 10px" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" width="100">  
+# RentalHunter
+### <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" width="25"> [click here to invite me](https://discord.com/oauth2/authorize?client_id=1213808680869437460) <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" width="25">
 
 A simple yet effective web scraper Discord bot that checks for available rental properties in the netherlands every 4 minutes.
 Subscribers of the discord bot will be notified when a new property is available, if it meets the set filters.
