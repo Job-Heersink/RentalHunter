@@ -96,35 +96,17 @@ jobs:
           GEOCODING_API_KEY: ${{ secrets.GEOCODING_API_KEY }}
           TEMPLATE: "cloudformation/app_stack.yaml"
         run: |
+          echo "EnvironmentCode=$ENVIRONMENT_CODE" >> deploy.cfn.properties
+          echo "ProductName=$PRODUCT_NAME" >> deploy.cfn.properties
+          echo "DiscordPublicKey=$DISCORD_PUBLIC_KEY" >> deploy.cfn.properties
+          echo "DiscordBotToken=$DISCORD_BOT_TOKEN" >> deploy.cfn.properties
+          echo "GeocodingApiKey=$GEOCODING_API_KEY" >> deploy.cfn.properties
+          echo "WebAppImage=$IMAGE_URI" >> deploy.cfn.properties
+          
           STACK_NAME="$PRODUCT_NAME-$ENVIRONMENT_CODE-stack"
           echo "STACK_NAME=$STACK_NAME" >> $GITHUB_ENV
           
-          function deploy_stack() {
-            local CAPABILITIES="CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_IAM"
-
-            if ! aws cloudformation describe-stacks --stack-name $1 --output text --query "Stacks[0].StackId"; then
-              echo "Creating stack $1"
-              aws cloudformation create-stack --stack-name $1 --template-body file://$2 --parameters $3 --capabilities $CAPABILITIES
-              echo "Waiting for stack to be created"
-              aws cloudformation wait stack-create-complete --stack-name $1 && echo "Stack created!"
-            else
-              echo "Updating stack $1"
-              if aws cloudformation update-stack --stack-name $1 --template-body file://$2 --parameters $3 --capabilities $CAPABILITIES; then
-                echo "CloudFormation stack update successful"
-                echo "Waiting for stack to be updated"
-                aws cloudformation wait stack-update-complete --stack-name $1 && echo "Stack updated!"
-              elif [ $? -eq 254 ]; then
-                echo "No updates to be performed."
-              else
-                echo "CloudFormation stack update failed."
-              return 1
-              fi
-            fi
-
-            return 0
-          }
-          
-          deploy_stack $STACK_NAME $TEMPLATE "ParameterKey=EnvironmentCode,ParameterValue=$ENVIRONMENT_CODE" "ParameterKey=ProductName,ParameterValue=$PRODUCT_NAME ParameterKey=EnvironmentCode,ParameterValue=$ENVIRONMENT_CODE ParameterKey=DISCORD_PUBLIC_KEY,ParameterValue=$DISCORD_PUBLIC_KEY ParameterKey=DISCORD_BOT_TOKEN,ParameterValue=$DISCORD_BOT_TOKEN ParameterKey=GEOCODING_API_KEY,ParameterValue=$GEOCODING_API_KEY ParameterKey=WEB_APP_IMAGE,ParameterValue=$IMAGE_URI"
+          aws cloudformation deploy --stack-name $STACK_NAME --template-file $TEMPLATE --capabilities CAPABILITY_NAMED_IAM  --parameter-overrides $(cat deploy.cfn.properties) --no-fail-on-empty-changeset
 
       - name: Deploy code to lambda
         env:
