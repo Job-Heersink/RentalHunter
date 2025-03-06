@@ -75,7 +75,7 @@ Resources:
   InvokeRule:
     Type: AWS::Events::Rule
     Properties:
-      Description: "Scrape every 4 minutes"
+      Description: "Scrape every 4 minutes."
       Name: "scrape-rule"
       #RoleArn: String
       ScheduleExpression: "rate(10 minutes)"
