@@ -78,7 +78,7 @@ Resources:
       Description: "Scrape every 4 minutes"
       Name: "scrape-rule"
       #RoleArn: String
-      ScheduleExpression: "rate(4 minutes)"
+      ScheduleExpression: "rate(10 minutes)"
       State: "ENABLED"
       Targets:
         - Arn: !GetAtt ScraperLambda.Arn
